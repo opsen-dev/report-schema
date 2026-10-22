@@ -1,0 +1,270 @@
+{
+  "org": "northwind",
+  "taken_at": 1792687976.8405726,
+  "monthly_waste": 3234.0,
+  "annual_waste": 38808.0,
+  "findings": [
+    {
+      "id": "copilot.idle",
+      "category": "copilot",
+      "title": "Copilot seats with no activity in 30 days",
+      "monthly_usd": 1406.0,
+      "basis": "list price $19/seat/month (Business); last_activity_at older than 30 days or never set",
+      "detail": "Reclaiming a seat removes the licence at the end of the billing cycle. The person keeps their GitHub account and can be given a seat again at any time.",
+      "items": [
+        {
+          "login": "ivanx",
+          "last_activity": null,
+          "plan_type": "business",
+          "via_team": "platform",
+          "monthly_usd": 19.0,
+          "price_source": "list"
+        },
+        {
+          "login": "eli_gh",
+          "last_activity": 1785091976.8405726,
+          "plan_type": "business",
+          "via_team": null,
+          "monthly_usd": 19.0,
+          "price_source": "list"
+        },
+        {
+          "login": "hana2",
+          "last_activity": 1783882376.8405726,
+          "plan_type": "business",
+          "via_team": null,
+          "monthly_usd": 19.0,
+          "price_source": "list"
+        }
+      ],
+      "action": {
+        "type": "reclaim_copilot"
+      }
+    },
+    {
+      "id": "seats.dormant_member",
+      "category": "seats",
+      "title": "Paid seats held by members with no activity in 90 days",
+      "monthly_usd": 798.0,
+      "basis": "list price $21/seat/month (Enterprise); no push, pull request, review, comment or Copilot use in 90 days across 128 repositories",
+      "detail": "Removing someone from an organisation is not something opsen does for you. Export the list, confirm with each team, and remove them in GitHub.",
+      "items": [
+        {
+          "login": "dara-dev",
+          "last_activity": null
+        },
+        {
+          "login": "farahcodes",
+          "last_activity": 1784659976.8405726
+        },
+        {
+          "login": "quinnx",
+          "last_activity": 1781117576.8405726
+        }
+      ],
+      "action": {
+        "type": "export"
+      }
+    },
+    {
+      "id": "actions.superseded",
+      "category": "actions",
+      "title": "Pull request runs made obsolete by a newer push",
+      "monthly_usd": 611.0,
+      "basis": "job timings \u00d7 runner rate, counting only the minutes after a newer run on the same pull request started",
+      "detail": "A concurrency group cancels the older run as soon as a newer commit arrives. opsen opens a pull request that adds one; you review and merge it.",
+      "items": [
+        {
+          "repo": "web",
+          "path": ".github/workflows/ci.yml",
+          "runs": 412,
+          "minutes": 18640,
+          "monthly_usd": 166.9,
+          "fixable": true
+        },
+        {
+          "repo": "api",
+          "path": ".github/workflows/test.yml",
+          "runs": 388,
+          "minutes": 15210,
+          "monthly_usd": 141.2,
+          "fixable": true
+        },
+        {
+          "repo": "mobile-ios",
+          "path": ".github/workflows/build.yml",
+          "runs": 96,
+          "minutes": 2210,
+          "monthly_usd": 137.0,
+          "fixable": true
+        }
+      ],
+      "action": {
+        "type": "fix_pr",
+        "fix": "concurrency"
+      }
+    },
+    {
+      "id": "seats.stale_invitations",
+      "category": "seats",
+      "title": "Invitations holding a seat for more than 14 days",
+      "monthly_usd": 231.0,
+      "basis": "list price $21/seat/month; a pending invitation occupies a seat until it is accepted or cancelled",
+      "detail": "Cancelling an invitation frees the seat. The invitee can be invited again.",
+      "items": [
+        {
+          "id": 9000,
+          "login": null,
+          "email": "priyax@northwind.example",
+          "inviter": "priya",
+          "created_at": 1782240776.8405726,
+          "failed": false
+        },
+        {
+          "id": 9001,
+          "login": "islak",
+          "email": null,
+          "inviter": "omar",
+          "created_at": 1789411976.8405726,
+          "failed": false
+        },
+        {
+          "id": 9002,
+          "login": "xinx",
+          "email": null,
+          "inviter": "priya",
+          "created_at": 1786647176.8405726,
+          "failed": false
+        }
+      ],
+      "action": {
+        "type": "cancel_invitations"
+      }
+    },
+    {
+      "id": "actions.hung",
+      "category": "actions",
+      "title": "Jobs that run until GitHub's six-hour limit",
+      "monthly_usd": 188.0,
+      "basis": "job timings \u00d7 runner rate for jobs that hit the default 360-minute timeout",
+      "detail": "A timeout-minutes line stops a stuck job early. opsen proposes a limit from the job's own history.",
+      "items": [
+        {
+          "repo": "mobile-ios",
+          "path": ".github/workflows/release.yml",
+          "runs": 6,
+          "minutes": 2160,
+          "monthly_usd": 133.9,
+          "timeout": 30,
+          "fixable": true
+        },
+        {
+          "repo": "data",
+          "path": ".github/workflows/backfill.yml",
+          "runs": 3,
+          "minutes": 1080,
+          "monthly_usd": 36.4,
+          "timeout": 60,
+          "fixable": true
+        },
+        {
+          "repo": "infra",
+          "path": ".github/workflows/nightly.yml",
+          "runs": 4,
+          "minutes": 1440,
+          "monthly_usd": 17.7,
+          "timeout": 45,
+          "fixable": true
+        }
+      ],
+      "action": {
+        "type": "fix_pr",
+        "fix": "timeout"
+      }
+    }
+  ],
+  "spend": {
+    "plan": "enterprise",
+    "seats": 412,
+    "seats_monthly": 8652.0,
+    "copilot_seats": 298,
+    "copilot_monthly": 5662.0,
+    "copilot_credits_last_month": 1740.0,
+    "copilot_credits_by_model": [
+      {
+        "model": "claude-opus-5-5",
+        "usd": 880.0
+      },
+      {
+        "model": "gpt-5.2",
+        "usd": 520.0
+      },
+      {
+        "model": "gemini-3-pro",
+        "usd": 210.0
+      },
+      {
+        "model": "claude-sonnet-5-5",
+        "usd": 130.0
+      }
+    ],
+    "actions_last_month": 6940.0,
+    "actions_source": "billing usage report"
+  },
+  "withheld": [
+    {
+      "id": "copilot.duplicate_with_cursor",
+      "reason": "Cursor is not connected, so seats paid twice cannot be identified yet."
+    }
+  ],
+  "coverage": {
+    "merged_prs_30d": 1859,
+    "repositories": 128,
+    "repositories_with_workflows": 74,
+    "runs": 8240,
+    "jobs_priced": 1210,
+    "members": 412,
+    "copilot_seats": 298,
+    "errors": 0,
+    "truncated": {},
+    "api_calls": 1412,
+    "repository_selection": "all"
+  },
+  "attribution": {
+    "days": 30,
+    "total_usd": 11206.0,
+    "pull_requests": 544,
+    "per_pr": 20.6,
+    "dual_tooled": 14,
+    "people": [
+      {
+        "who": "priya_gh",
+        "login": "priya_gh",
+        "usd": 697.76,
+        "prs": 41,
+        "per_pr": 17.02,
+        "also_copilot": true,
+        "copilot_last_activity": null
+      },
+      {
+        "who": "gus-w",
+        "login": "gus-w",
+        "usd": 677.22,
+        "prs": 45,
+        "per_pr": 15.05,
+        "also_copilot": false,
+        "copilot_last_activity": null
+      },
+      {
+        "who": "emilk",
+        "login": "emilk",
+        "usd": 664.2,
+        "prs": 20,
+        "per_pr": 33.21,
+        "also_copilot": false,
+        "copilot_last_activity": null
+      }
+    ]
+  },
+  "audit_id": "aud_demo"
+}
