@@ -4,67 +4,420 @@
   "title": "opsen report",
   "description": "The latest completed audit of one GitHub organisation, as served at https://opsen.dev/r/<token>.json. Money is US dollars; timestamps are Unix seconds, UTC.",
   "type": "object",
-  "required": ["org", "taken_at", "monthly_waste", "annual_waste", "findings", "spend", "coverage"],
+  "required": [
+    "org",
+    "taken_at",
+    "monthly_waste",
+    "annual_waste",
+    "findings",
+    "spend",
+    "coverage"
+  ],
   "properties": {
-    "org": {"type": "string", "description": "GitHub organisation or personal account login"},
-    "audit_id": {"type": "string"},
-    "taken_at": {"type": "number"},
-    "monthly_waste": {"type": "number", "description": "Sum of every finding's monthly_usd"},
-    "annual_waste": {"type": "number"},
-    "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}},
-    "spend": {"$ref": "#/$defs/spend"},
-    "withheld": {"type": "array", "description": "Findings not reported, with the reason"},
-    "coverage": {"$ref": "#/$defs/coverage"},
-    "attribution": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/attribution"}]},
-    "agents": {"type": "object", "description": "Cursor and OpenAI spend, when their admin keys are connected",
+    "org": {
+      "type": "string",
+      "description": "GitHub organisation or personal account login"
+    },
+    "audit_id": {
+      "type": "string"
+    },
+    "taken_at": {
+      "type": "number"
+    },
+    "monthly_waste": {
+      "type": "number",
+      "description": "Sum of every finding's monthly_usd"
+    },
+    "annual_waste": {
+      "type": "number"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "spend": {
+      "$ref": "#/$defs/spend"
+    },
+    "withheld": {
+      "type": "array",
+      "description": "Findings not reported, with the reason"
+    },
+    "coverage": {
+      "$ref": "#/$defs/coverage"
+    },
+    "attribution": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/attribution"
+        }
+      ]
+    },
+    "agents": {
+      "type": "object",
+      "description": "Older reports only: Cursor and OpenAI spend before platforms moved to `sources`",
       "properties": {
-        "cursor": {"type": "object", "properties": {"seats": {"type": "integer"}, "seat_monthly": {"type": "number"},
-          "usage_usd": {"type": "number"}, "total_usd": {"type": "number"}, "idle": {"type": "integer"}, "seat_price": {"type": "number"}}},
-        "openai": {"type": "object", "properties": {"total_usd": {"type": "number"}, "days": {"type": "integer"},
-          "by_project": {"type": "array", "items": {"$ref": "#/$defs/named_usd"}},
-          "by_line_item": {"type": "array", "items": {"$ref": "#/$defs/named_usd"}}}}
-      }}
+        "cursor": {
+          "type": "object",
+          "properties": {
+            "seats": {
+              "type": "integer"
+            },
+            "seat_monthly": {
+              "type": "number"
+            },
+            "usage_usd": {
+              "type": "number"
+            },
+            "total_usd": {
+              "type": "number"
+            },
+            "idle": {
+              "type": "integer"
+            },
+            "seat_price": {
+              "type": "number"
+            }
+          }
+        },
+        "openai": {
+          "type": "object",
+          "properties": {
+            "total_usd": {
+              "type": "number"
+            },
+            "days": {
+              "type": "integer"
+            },
+            "by_project": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/named_usd"
+              }
+            },
+            "by_line_item": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/named_usd"
+              }
+            }
+          }
+        }
+      }
+    },
+    "sources": {
+      "type": "object",
+      "description": "One entry per connected platform, keyed by source: gitlab, azure_devops, atlassian, jetbrains, circleci, cursor, openai",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "name",
+          "total_usd"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "total_usd": {
+            "type": "number",
+            "description": "What the platform costs a month"
+          },
+          "budget": {
+            "enum": [
+              "seats",
+              "copilot",
+              "actions",
+              "agents",
+              "platforms"
+            ]
+          },
+          "kpis": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "lines": {
+            "type": "array",
+            "description": "Lines that add up to total_usd",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "usd"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "usd": {
+                  "type": "number"
+                },
+                "waste": {
+                  "type": "boolean"
+                },
+                "fid": {
+                  "type": "string",
+                  "description": "The finding a waste line belongs to"
+                }
+              }
+            }
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    }
   },
   "$defs": {
     "finding": {
       "type": "object",
-      "required": ["id", "category", "title", "monthly_usd", "basis", "items"],
+      "required": [
+        "id",
+        "category",
+        "title",
+        "monthly_usd",
+        "basis",
+        "items"
+      ],
       "properties": {
-        "id": {"type": "string", "examples": ["copilot.idle", "seats.dormant_member", "seats.stale_invitations", "actions.superseded", "actions.hung", "actions.dormant_schedules", "cursor.idle"]},
-        "category": {"enum": ["seats", "copilot", "actions", "cursor"]},
-        "title": {"type": "string"},
-        "monthly_usd": {"type": "number"},
-        "basis": {"type": "string", "description": "The price and rule that produced the figure"},
-        "detail": {"type": "string"},
-        "items": {"type": "array", "items": {"type": "object"}},
-        "action": {"type": ["object", "null"], "properties": {"type": {"enum": ["reclaim_copilot", "cancel_invitations", "fix_pr", "disable_workflow", "export"]}}}
+        "id": {
+          "type": "string",
+          "examples": [
+            "copilot.idle",
+            "seats.dormant_member",
+            "seats.stale_invitations",
+            "actions.superseded",
+            "actions.hung",
+            "actions.dormant_schedules",
+            "cursor.idle",
+            "gitlab.dormant",
+            "gitlab.duo_idle",
+            "gitlab.duo_unassigned",
+            "azure_devops.dormant_basic",
+            "azure_devops.dormant_test_plans",
+            "azure_devops.dormant_vs",
+            "atlassian.jira",
+            "atlassian.confluence",
+            "atlassian.jsm",
+            "atlassian.bitbucket",
+            "jetbrains.idle",
+            "jetbrains.duplicate",
+            "jetbrains.unassigned",
+            "circleci.failing"
+          ]
+        },
+        "category": {
+          "enum": [
+            "seats",
+            "copilot",
+            "actions",
+            "cursor",
+            "openai",
+            "gitlab",
+            "azure_devops",
+            "atlassian",
+            "jetbrains",
+            "circleci"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "monthly_usd": {
+          "type": "number"
+        },
+        "basis": {
+          "type": "string",
+          "description": "The price and rule that produced the figure"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "action": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "type": {
+              "enum": [
+                "reclaim_copilot",
+                "cancel_invitations",
+                "fix_pr",
+                "disable_workflow",
+                "source",
+                "export"
+              ]
+            },
+            "source": {
+              "type": "string",
+              "description": "For type source: the platform the change is made on"
+            },
+            "name": {
+              "type": "string",
+              "description": "For type source: the platform action, e.g. remove_member, downgrade, revoke"
+            }
+          }
+        },
+        "rec": {
+          "type": "object",
+          "description": "How the finding is presented: verb, why, steps, effort"
+        }
       }
     },
     "spend": {
       "type": "object",
       "properties": {
-        "plan": {"type": "string"}, "seats": {"type": "integer"}, "seats_monthly": {"type": "number"},
-        "copilot_seats": {"type": "integer"}, "copilot_monthly": {"type": "number"},
-        "copilot_credits_last_month": {"type": ["number", "null"]},
-        "copilot_credits_by_model": {"type": ["array", "null"], "items": {"type": "object", "properties": {"model": {"type": "string"}, "usd": {"type": "number"}}}},
-        "actions_last_month": {"type": ["number", "null"]}, "actions_source": {"type": ["string", "null"]}
+        "plan": {
+          "type": "string"
+        },
+        "seats": {
+          "type": "integer"
+        },
+        "seats_monthly": {
+          "type": "number"
+        },
+        "copilot_seats": {
+          "type": "integer"
+        },
+        "copilot_monthly": {
+          "type": "number"
+        },
+        "copilot_credits_last_month": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "copilot_credits_by_model": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "properties": {
+              "model": {
+                "type": "string"
+              },
+              "usd": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "actions_last_month": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "actions_source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "coverage": {
       "type": "object",
       "properties": {
-        "repositories": {"type": "integer"}, "repositories_with_workflows": {"type": "integer"}, "runs": {"type": "integer"},
-        "jobs_priced": {"type": "integer"}, "members": {"type": "integer"}, "merged_prs_30d": {"type": ["integer", "null"]},
-        "copilot_seats": {"type": ["integer", "null"]}, "errors": {"type": "integer"}, "api_calls": {"type": "integer"},
-        "repository_selection": {"enum": ["all", "selected"]}
+        "repositories": {
+          "type": "integer"
+        },
+        "repositories_with_workflows": {
+          "type": "integer"
+        },
+        "runs": {
+          "type": "integer"
+        },
+        "jobs_priced": {
+          "type": "integer"
+        },
+        "members": {
+          "type": "integer"
+        },
+        "merged_prs_30d": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "copilot_seats": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "errors": {
+          "type": "integer"
+        },
+        "api_calls": {
+          "type": "integer"
+        },
+        "repository_selection": {
+          "enum": [
+            "all",
+            "selected"
+          ]
+        }
       }
     },
     "attribution": {
       "type": "object",
       "description": "Claude Code spend, when an Anthropic Admin key is connected",
-      "properties": {"total_usd": {"type": "number"}, "pull_requests": {"type": "integer"}, "per_pr": {"type": "number"},
-        "dual_tooled": {"type": "integer"}, "days": {"type": "integer"}, "people": {"type": "array", "items": {"type": "object"}}}
+      "properties": {
+        "total_usd": {
+          "type": "number"
+        },
+        "pull_requests": {
+          "type": "integer"
+        },
+        "per_pr": {
+          "type": "number"
+        },
+        "dual_tooled": {
+          "type": "integer"
+        },
+        "days": {
+          "type": "integer"
+        },
+        "people": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
     },
-    "named_usd": {"type": "object", "properties": {"name": {"type": "string"}, "usd": {"type": "number"}}}
+    "named_usd": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "usd": {
+          "type": "number"
+        }
+      }
+    }
   }
 }
